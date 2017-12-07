@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>吃鸡</title>
+    <style type="text/css">
+        #battle-div {
+            width: 70%;
+            float: left;
+        }
+        #rand-div {
+            width: 24%;
+            margin: 10px auto auto 2%;
+            float: left;
+            border: 2px solid cornflowerblue;
+        }
+        #battle-ground {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>大吉大利，今晚吃鸡。</h1>
+    <button id="startBtn">开始</button>
+    <button id="stopBtn">暂停</button>
+    <button id="rebuildBtn">重开一局</button>
+    <div style="clear: both"></div>
+    <div id="battle-div">
+        <canvas id="battle-ground" width="1000px" height="600px"></canvas>
+    </div>
+    <!--<div id="rand-div">-->
+    <!--</div>-->
+</body>
+</html>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+<script type="text/javascript">
+    var ctx = document.getElementById('battle-ground').getContext('2d');
+    ctx.font = '18px';
+
+    function draw(data) {
+        ctx.clearRect(0, 0, 1000, 600);
+
+        var area = data.area;
+        ctx.strokeStyle = '#107ed8';
+        ctx.strokeRect(area.startX, area.startY, area.endX - area.startX, area.endY - area.startY);
+
+        _.each(data.users, function (user) {
+            if(user.alive) {
+                ctx.fillStyle = user.color;
+            }else {
+                ctx.fillStyle = 'gray';
+            }
+            ctx.fillRect(user.x, user.y, 20, 20);
+            ctx.fillStyle = "black";
+            ctx.fillText(user.name, user.x - 5, user.y - 5);
+
+            if(!user.alive) {
+                ctx.strokeStyle = "red";
+                ctx.beginPath();
+                ctx.moveTo(user.x, user.y);
+                ctx.lineTo(user.x+20, user.y+20);
+                ctx.moveTo(user.x+20, user.y);
+                ctx.lineTo(user.x, user.y+20);
+                ctx.stroke();
+                ctx.closePath();
+            }
+        });
+
+        _.each(data.bullets, function (bullet) {
+            ctx.fillStyle = bullet.color;
+            ctx.beginPath();
+            ctx.arc(bullet.x, bullet.y, 3, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        });
+    }
+
+
+    var socket = io('ws://localhost:8008');
+    socket.on('connect', function () {
+
+    });
+
+    socket.on('info', function (info) {
+        draw(info);
+        window.info = info;
+    });
+
+    function start() {
+        socket.emit('start', 'ok');
+    };
+
+    function stop() {
+        socket.emit('stop', 'ok');
+    };
+
+    function rebuild() {
+        socket.emit('rebuild', 'ok');
+    };
+
+    document.getElementById('startBtn').onclick = start;
+    document.getElementById('stopBtn').onclick = stop;
+    document.getElementById('rebuildBtn').onclick = rebuild;
+
+</script>

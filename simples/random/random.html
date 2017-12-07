@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+</head>
+<body>
+
+</body>
+</html>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+<script type="text/javascript">
+    function play(name) {
+        var socket = io('http://localhost:8008');
+        socket.on('connect', function () {
+            console.log('connect');
+            function register() {
+                socket.emit('register', name, function (data) {
+                    console.log(data);
+                });
+            }
+
+            register();
+
+            let angle = (Math.random() * 2) * Math.PI;
+            socket.on('info', function (info) {
+                angle += (Math.random() * 0.05) * Math.PI;
+                socket.emit('move', angle);
+                socket.emit('shoot', (Math.random() * 2) * Math.PI);
+            });
+
+            socket.on('rebuild', function () {
+                register();
+            });
+        });
+    };
+    play('AOA');
+    play('BOB');
+    play('COC');
+    play('DOD');
+</script>
