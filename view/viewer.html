@@ -8,7 +8,8 @@
             width: 70%;
             float: left;
         }
-        #rand-div {
+        #rank-div {
+            font-size: 12px;
             width: 24%;
             margin: 10px auto auto 2%;
             float: left;
@@ -29,14 +30,34 @@
     <div id="battle-div">
         <canvas id="battle-ground" width="1000px" height="600px"></canvas>
     </div>
-    <!--<div id="rand-div">-->
-    <!--</div>-->
+    <div id="rank-div">
+        <ul>
+            <li v-for="user in users">
+                <span v-bind:style="{color: user.color}">{{ user.name }}</span>
+                &nbsp;
+                &nbsp;
+                &nbsp;
+                &nbsp;
+                <span>{{ user.killCount }}</span>
+            </li>
+        </ul>
+    </div>
 </body>
 </html>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>-->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+<script src="https://unpkg.com/vue"></script>
 <script type="text/javascript">
+
+    let rankVue = new Vue({
+        el: '#rank-div',
+        data: {
+            users: []
+        }
+    });
+
+
     var ctx = document.getElementById('battle-ground').getContext('2d');
     ctx.font = '18px';
 
@@ -76,8 +97,19 @@
             ctx.fill();
             ctx.closePath();
         });
-    }
+    };
 
+    function rank(data) {
+        let users = data.users;
+        let counts = _.countBy(_.map(users, u=>u.murderer));
+        _.each(users, function (u) {
+            u.killCount = counts[u.name] || 0;
+        });
+        users.sort(function (a, b) {
+            return a.killCount == b.killCount ? 0 : (a.killCount < b.killCount ? 1 : -1);
+        });
+        rankVue.users = users;
+    };
 
     var socket = io('ws://localhost:8008');
     socket.on('connect', function () {
@@ -86,6 +118,7 @@
 
     socket.on('info', function (info) {
         draw(info);
+        rank(info);
         window.info = info;
     });
 
