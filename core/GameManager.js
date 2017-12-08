@@ -4,9 +4,9 @@ const randomHexColor = require('random-hex-color');
 
 const DEFAULT_OPTIONS = {
     'user_width': 20,
-    'move_instance': 10,
-    'shoot_interval': 5,
-    'shoot_instance': 20,
+    'move_instance': 2,
+    'shoot_interval': 25,
+    'shoot_instance': 4,
     'wait_shrink_steps': 100,
     'shrink_steps': 20,
 };
